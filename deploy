@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+ionic build --release --prod
+cp -r ./www/* ../mlflabs/cards
+cd ../mlflabs/cards
+git add .
+git commit -m "updated cards client"
+git push origin
