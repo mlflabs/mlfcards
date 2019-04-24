@@ -2,7 +2,7 @@
 
 ionic build --release --prod
 cp -r ./www/* ../mlflabs/cards
-cd ../mlflabs/cards
+cd ../mlflabs
 git add .
 git commit -m "updated cards client"
 git push origin

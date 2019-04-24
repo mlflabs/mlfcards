@@ -1,0 +1,18 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Project Edit</ion-title>
+    <ion-buttons slot="end">
+        <ion-button (click)="close()" >
+          <ion-icon slot="end" name="close"></ion-icon>
+        </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <app-project-edit-component
+    [item]="item"
+    (savedEvent)="onSavedEvent($event)"
+    (removedEvent)="onRemovedEvent($event)"
+  ></app-project-edit-component>
+</ion-content>

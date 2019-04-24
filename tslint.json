@@ -7,10 +7,10 @@
     "callable-types": true,
     "class-name": true,
     "comment-format": [
-      true,
+      false,
       "check-space"
     ],
-    "curly": true,
+    "curly": false,
     "deprecation": {
       "severity": "warn"
     },
@@ -79,8 +79,8 @@
     "one-line": [
       true,
       "check-open-brace",
-      "check-catch",
-      "check-else",
+      // "check-catch",
+      // "check-else",
       "check-whitespace"
     ],
     "prefer-const": true,
@@ -110,7 +110,7 @@
     "unified-signatures": true,
     "variable-name": false,
     "whitespace": [
-      true,
+      false,
       "check-branch",
       "check-decl",
       "check-operator",

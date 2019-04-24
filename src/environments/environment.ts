@@ -3,9 +3,14 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  app_id: 'crd',
+  pouch_prefix: 'cards_',
+  token_expiery: 300, // how many days
+  auth_api: 'https://auth.mlflabs.com',
+  couch_db: 'http://localhost:3001/api_local',
+  access_meta_key: 'meta_access',
 };
-
 /*
  * For easier debugging in development mode, you can import the following file
  * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
