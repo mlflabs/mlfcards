@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>
+      <div *ngIf="sync < 100" color="secondary">
+            Dictionary database is being updated</div>
+      <ion-input 
+            *ngIf="sync === 100"
+            placeholder="Search"
+            clear-input="true"
+            debounce="500"
+            [(ngModel)]="searchText"
+            (ionChange)="textChange()"
+            autofocus="true">
+        </ion-input>
+        <ion-progress-bar   
+          *ngIf="sync < 100"
+          value="{{sync}}"
+          color="secondary"></ion-progress-bar>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+
+
+
+  <ion-fab vertical="top" horizontal="end" slot="fixed" edge="true">
+    <ion-fab-button (click)="startStudy()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

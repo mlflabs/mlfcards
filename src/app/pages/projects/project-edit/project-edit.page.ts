@@ -10,6 +10,7 @@ import { ModalController } from '@ionic/angular';
 export class ProjectEditPage implements OnInit {
   item = new ProjectItem();
 
+
   constructor(public modalController: ModalController) { }
 
   ngOnInit() {

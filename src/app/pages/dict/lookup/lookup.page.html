@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref=""></ion-back-button>
+      </ion-buttons>
+      <ion-title>
+        <ion-input 
+            placeholder="Search"
+            clear-input="true"
+            debounce="500"
+            [(ngModel)]="searchText"
+            (ionChange)="textChange()"
+            autofocus="true">
+
+        </ion-input>
+        <ion-progress-bar   
+          *ngIf="sync < 100"
+          value="{{sync}}"
+          color="secondary"></ion-progress-bar>
+      </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content padding>
+    <ion-list lines="inset" 
+              *ngFor="let w of words" >
+        <ion-item (click)="selectWord(w)" detail >
+          <ion-label color="primary" >
+            <H3>{{w._id}}, {{w.pinyin}}</H3>
+            <ion-note [innerHTML]="printDef(w.text)"></ion-note>
+
+          </ion-label>
+          
+        </ion-item>
+    </ion-list>
+</ion-content>

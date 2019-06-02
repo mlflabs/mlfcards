@@ -97,3 +97,14 @@ export const waitMS = (ms) => {
     setTimeout(resolve, ms);
   });
 };
+
+
+
+export const addDays = (date: Date, days: number): Date => {
+  console.log('calculating next date');
+  const  d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+};
+
+

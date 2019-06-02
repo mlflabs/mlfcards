@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -21,6 +22,7 @@ import { ProjectPageModule } from './pages/projects/project/project.module';
   entryComponents: [],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     HttpClientModule,
     IonicStorageModule.forRoot(),
     IonicModule.forRoot(),

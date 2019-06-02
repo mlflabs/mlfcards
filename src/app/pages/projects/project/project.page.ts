@@ -1,24 +1,23 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NavController, ModalController } from '@ionic/angular';
 import { StateService } from '../../../services/state.service';
 import { DataService } from '../../../services/data.service';
 import { ProjectEditPage } from '../project-edit/project-edit.page';
 import { EditCardComponent } from '../../../components/cards/edit-card/edit-card.component';
-import { ACTION_SAVE, ACTION_REMOVE, CARD_COLLECTION } from '../../../models';
-import { isNgTemplate } from '../../../../../node_modules/@angular/compiler';
-import { CardComponent } from '../../../components/cards/card/card.component';
-import { PlayDefaultComponent } from '../../../components/cards/play-default/play-default.component';
+import { ACTION_SAVE, ACTION_REMOVE, CARD_COLLECTION, ProjectItem } from '../../../models';
+
 
 @Component({
   selector: 'app-project',
   templateUrl: './project.page.html',
   styleUrls: ['./project.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectPage implements OnInit, OnDestroy {
 
   name = '';
-  _project;
+  _project = new ProjectItem();
   cards = [];
   private _projectSub;
   private _cardSub;
@@ -27,59 +26,55 @@ export class ProjectPage implements OnInit, OnDestroy {
               public navCtr: NavController,
               public modalController: ModalController,
               public state: StateService,
-              public dataService: DataService) { }
+              public dataService: DataService,
+              public cdr: ChangeDetectorRef) { }
 
 
 
   async ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
+    console.log('Project init');
+    //const id = this.route.snapshot.paramMap.get('id');
 
-    if(id) {
-      const project = await this.dataService.getDoc(id);
+    this.state.waitForReady().subscribe(() => {
+      console.log('Setting project subscripitons');
+      this._cardSub = this.state.cards$.subscribe(cards => {
+        console.log('Project cards subscription', cards);
+        this.cards = cards;
+        this.cdr.detectChanges();
+      });
 
-      if(project) {
-        this.refresh(project);
-      }
-      else {
-        this.navCtr.back();
-      }
-    }
-    else {
-      //redirect to projects
-      this.navCtr.back();
-    }
+      this._projectSub = this.state.selectedProject$
+        .subscribe(project => {
+          if(project == null)
+            return;
 
-    this._cardSub = this.state.cards$.subscribe(cards => {
-       this.cards = cards;
-    });
-
-    this._projectSub = this.dataService.subscribeProjectsChanges()
-      .subscribe(project => {
-        if(project._id === this._project._id) {
+          console.log('PROJECTS PAGE PROJECT::: ', project);
           if(!project._deleted) {
             this.refresh(project);
           }
           else {
             this.navCtr.navigateRoot('/');
           }
-        }
-    });
+      });
 
+      //now just load it
+      this.refresh(this.state.selectedProject || new ProjectItem());
+      this.cards = this.state.cards;
+      this.cdr.detectChanges();
+    });
   }
 
   ngOnDestroy(): void {
-    this._projectSub.unsubscribe();
-    this._cardSub.unsubscribe();
-
+    if(this._projectSub && !this._projectSub.closed)
+      this._projectSub.unsubscribe();
+    if(this._cardSub && !this._cardSub.closed)
+      this._cardSub.unsubscribe();
   }
 
   async refresh(project) {
-    this.state.selectedProject = project;
     this.name = project.name;
     this._project = project;
-
-    // load project cards
-
+    this.cdr.detectChanges();
   }
 
   async play() {
@@ -97,9 +92,7 @@ export class ProjectPage implements OnInit, OnDestroy {
     if(data) {
       if(data['action'] === ACTION_SAVE) {
         console.log('Saving:: ', data.item, this._project, CARD_COLLECTION);
-        this.dataService.saveInProject( data.item,
-                                        this._project,
-                                        CARD_COLLECTION);
+        this.dataService.saveCard( data.item, this._project);
       }
       else if(data['action'] === ACTION_REMOVE && data['item']) {
         this.dataService.remove(data.item);

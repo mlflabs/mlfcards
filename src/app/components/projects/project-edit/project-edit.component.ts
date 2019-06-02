@@ -15,6 +15,9 @@ export class ProjectEditComponent implements OnInit {
   @Output() savedEvent = new EventEmitter<any>();
   @Output() removedEvent = new EventEmitter<any>();
 
+  view = 'main';
+
+
   constructor(public dataService: DataService,
               public alertController: AlertController) { }
 

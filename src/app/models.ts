@@ -9,6 +9,16 @@ export const DOUBLE_DIV = '||';
 export const ACTION_SAVE = 'save';
 export const ACTION_REMOVE = 'remove';
 
+export const COLOR_PRIMARY = 'primary';
+export const COLOR_SECONDARY = 'secondary';
+export const COLOR_TERTIARY = 'tertiary';
+export const COLOR_SUCCESS = 'success';
+export const COLOR_WARNING = 'warning';
+export const COLOR_DANGER = 'danger';
+export const COLOR_LIGHT = 'light';
+export const COLOR_MEDIUM = 'medium';
+export const COLOR_DARK = 'dark';
+
 export class Doc {
   public _id?: string;
   public _rev?: string;
@@ -28,6 +38,7 @@ export class ProjectItem extends Doc {
   public user?;
   public meta_access?;
   public childId?;
+  public priority?: number; // how frequetly to study these cards
 }
 
 export class CardItem extends Doc {
@@ -36,11 +47,21 @@ export class CardItem extends Doc {
   public side3?: string;
   public node?: string;
 
-  public progress?: number;
-  public lastStudied?: Date;
-  public studied_total?: number;
-  public studied_success?: number;
-  public studied_failed?: number;
+  //public progress?: number;
+  public lastStudySession?: number;
+  public nextStudySession?: number;
+  public proficiencyLevel = 0;
+  public studyFinished?: boolean;
+  //public studied_total?: number;
+  //public studied_success?: number;
+  //public studied_failed?: number;
+
+  public currentGamePoints?: number;
+  public currentWrongAnswers?: number;
+  public currentCorrectAnswers?: number;
+  public currentNotKnow?: number;
+
+  public sessions?: object;
 
   public projectId: number;
   public meta_access?;

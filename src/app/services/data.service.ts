@@ -2,9 +2,9 @@ import { Platform } from '@ionic/angular';
 import { Injectable } from '@angular/core';
 import PouchDB from 'pouchdb';
 import PouchDBFind from 'pouchdb-find';
-import { Observable, fromEvent, Subject } from 'rxjs';
+import { Observable, fromEvent, Subject, BehaviorSubject } from 'rxjs';
 import { map, debounceTime, filter, first } from 'rxjs/operators';
-import { Doc, PROJECT_SERVICE, PROJECT_INDEX_SERVICE, ProjectItem, LASTCHAR, DIV } from '../models';
+import { Doc, PROJECT_SERVICE, PROJECT_INDEX_SERVICE, ProjectItem, LASTCHAR, DIV, CARD_COLLECTION, CardItem } from '../models';
 import { generateCollectionId, generateShortCollectionId, generateShortUUID, waitMS } from '../utils';
 import { isEqual } from 'lodash';
 import { AuthService } from '../auth/auth.service';
@@ -22,9 +22,10 @@ PouchDB.plugin(PouchDBFind);
 export class DataService {
 
   private _pouch: any;
-  private _pouchReady;
   public ready = false;
-  private _changes;
+  private _pouchReady$ = new BehaviorSubject(this.ready);
+  public addSyncCall$ = new Subject();
+  private _changes = new Subject();
   private _user;
 
   private _localPouchOptions = {
@@ -34,40 +35,105 @@ export class DataService {
 
   constructor(private platform: Platform,
               public authService: AuthService) {
-    this._changes = new Subject();
-    this._pouchReady = new Subject();
 
-    this.platform.ready().then(() => {
-      this._user = authService.user;
-      this.initPouch(environment.pouch_prefix + this._user.username,
-        this._user.username !== 'Guest',
-        false );
+    this.authService.waitForReady().subscribe(() => {
 
-      authService.user$.subscribe(user => {
-        if(user.username !== this._user.username) {
-          // only update if we are different, user change
-          // also see if we are updating from guest, import old data
-          if(this._user.username === 'Guest') {
-            this.initPouch(environment.pouch_prefix+user.username, true, true);
-          }
-          else {
-            this.initPouch(environment.pouch_prefix+user.username, true, false);
-          }
-          this._user = user;
-        }
-      });
+        this._user = authService.user;
+        this.initPouch(environment.pouch_prefix + this._user.username,
+          this._user.username !== 'Guest',
+          false );
+
+        authService.user$.subscribe(user => {
+            if(user.username !== this._user.username) {
+              // only update if we are different, user change
+              // also see if we are updating from guest, import old data
+              if(this._user.username === 'Guest') {
+                this.initPouch(environment.pouch_prefix+user.username, true, true);
+              }
+              else {
+                this.initPouch(environment.pouch_prefix+user.username, true, false);
+              }
+              this._user = user;
+            }
+          });
+
+        this.addSyncCall$.asObservable().pipe(debounceTime(environment.server_sync_debounce_time))
+            .subscribe(() => {
+                this.syncRemote();
+        });
     });
   }
 
+  async findCardBySide1(word: string) {
+    try {
+      const res =  await this._pouch.find({
+        selector: {
+          side1: word
+        }
+      });
+      return res['docs'];
+    }
+    catch (e) {
+      console.log('Find Card Error: ', e.message);
+      return [];
+    }
+  }
 
-  waitForReady(): Observable<any> {
-    // let others know are datasource is ready
-    return this._pouchReady.asObservable().pipe(first());
-    if(this.ready === true) {
-      this._pouchReady.next(true);
+  async getStudyCards(date = Date.now()) {
+    try {
+      // const all = await this._pouch.allDocs({ include_docs: true });
+      // console.log(all);
+      const res =  await this._pouch.find({
+        selector: {
+          nextStudySession: {
+            $lte:date
+          }
+        }
+      });
+      return res['docs'];
+    }
+    catch (e) {
+      console.log('Find Card Error: ', e.message);
+      return [];
+    }
+  }
+
+  async addCardFromWord(word,
+        project = new ProjectItem({_id: 'p|pi|default', childId: 'p|default'}),
+        syncRemote = true) {
+    try {
+      //make card
+      let def = word['def'].cc || word['def'].g ||
+      word['def'].usr || ' ';
+      def = def.substring(0, def.indexOf('|'));
+
+      const card = new CardItem({
+      note: '',
+      side1: word['_id'],
+      side2: def,
+      side3: word['pinin'],
+      nextStudySession:1, // so its added to index
+      });
+      //add the word
+      const res =  await this.saveCard(card, project);
+      if(syncRemote) this.addSyncCall$.next();
+      return res;
+    }
+    catch (e) {
+      console.log(e.message);
+      return false;
+    }
+  }
+
+  async saveCard(card: CardItem, project: ProjectItem) {
+    //add some necessary data
+    if(!card.nextStudySession) {
+      card.nextStudySession = 1; //need a valid num, for indexing
     }
 
+    return await this.saveInProject(card,project, CARD_COLLECTION);
   }
+
 
   subscribeChanges(): Observable<any> {
     return this._changes.asObservable().pipe(
@@ -158,7 +224,8 @@ export class DataService {
       doc.updated = Date.now();
       const res = await this._pouch.put(doc);
 
-      if(syncRemote) this.syncRemote();
+      if(syncRemote)
+        this.addSyncCall$.next();
 
       if(res.ok)
         return res;
@@ -185,7 +252,8 @@ export class DataService {
       docs.push(Object.assign(project, {_deleted: true, updated: Date.now()}));
       const res2 = await this._pouch.bulkDocs(docs);
 
-      if(syncRemote) this.syncRemote();
+      if(syncRemote)
+        this.addSyncCall$.next();
 
       return res2;
     }
@@ -204,7 +272,8 @@ export class DataService {
     try {
       const res = await this._pouch.put(doc);
 
-      if(syncRemote) this.syncRemote();
+      if(syncRemote)
+        this.addSyncCall$.next();
 
       return res;
     }
@@ -272,7 +341,8 @@ export class DataService {
         res = await this._pouch.putAttachment(doc._id, 'file', res.rev, attachment, attachment.type);
       }
 
-      if(syncRemote) this.syncRemote();
+      if(syncRemote)
+        this.addSyncCall$.next();
 
       console.log('Saved doc: ', res);
       if(res.ok)
@@ -327,7 +397,8 @@ export class DataService {
         res = await this._pouch.putAttachment(doc._id, 'file', res.rev, attachment, attachment.type);
       }
 
-      if(syncRemote) this.syncRemote();
+      if(syncRemote)
+        this.addSyncCall$.next();
 
       console.log('Saved doc: ', res);
       if(res.ok)
@@ -347,13 +418,14 @@ export class DataService {
   }
 
   async getDoc(id:string, attachments = false, opts = {}): Promise<any> {
+    console.log('GET DOC: ', id);
     try {
       const doc = await this._pouch.get(id, { ...{attachments: attachments}, ...opts });
       console.log('Get Doc Loaded: ', doc);
       return doc;
     }
     catch(e) {
-      console.log('Get Doc Error: ', e);
+      console.log('Get Doc Error: ', id, e);
       return null;
     }
   }
@@ -434,9 +506,8 @@ export class DataService {
           this._changes.next(change.doc);
     });
 
-    if(syncRemote) {
-      this.syncRemote();
-    }
+    if(syncRemote)
+        this.addSyncCall$.next();
 
     // load the docs into new pouch db
     if(mergeOldData) {
@@ -444,9 +515,14 @@ export class DataService {
         this.save(doc);
       });
     }
+    await waitMS(200);
     this.ready = true;
-    this._pouchReady.next(true);
+    this._pouchReady$.next(true);
     this.createSettingsDoc();
+
+    this._pouch.createIndex({
+      index: {fields: ['side1', 'nextStudySession']}
+    });
   }
 
 
@@ -455,19 +531,41 @@ export class DataService {
     await waitMS(1000);
     console.log('%%%%%%% Create Settings Doc: ');
     try {
-      const settings = await this.getDoc('settings');
+      const settings = await this._pouch.get('settings');
       console.log('Settings:: ', settings);
     }
     catch(e) {
       console.log('Error creating settings Doc: ', e);
       if(e.reason === 'missing') {
-        this._pouch.put({_id: 'settings', app: 'study_notes'});
+        this._pouch.put({_id: 'settings', app: environment.app_id});
       }
+    }
+    // create other default docs
+    // default project doc
+    try {
+      const p = new ProjectItem();
+      p.name = 'Default';
+      p.note = 'All new and unassigned cards are saved here';
+      p._id = PROJECT_SERVICE + DIV + PROJECT_INDEX_SERVICE + DIV + 'default';
+      p.childId = PROJECT_SERVICE+ DIV + 'default';
+      p.user = this.authService.user.username;
+      p.meta_access = [ 'u|'+ this.authService.getUsername() + DIV + 'default', ];
+
+      console.log('New Default Project: ', p);
+      this._pouch.put(p);
+    }
+    catch (e) {
+      console.log('Error Default Project: ', e.message);
     }
   }
 
+
   syncRemote() {
-    console.log('USER::: ', this._user);
+      console.log('----------------------------------');
+      console.log('USER::: ', this._user);
+      console.log(environment.couch_db);
+      console.log(this._user.token);
+      console.log('----------------------------------');
       const remoteDB = new PouchDB(environment.couch_db,
         {headers:{ 'x-access-token': this._user.token} });
 
@@ -490,6 +588,11 @@ export class DataService {
       }).on('active', function (info) {
         console.log('Remote Sync ACTIVE: ', info);
       });
+  }
+
+  waitForReady(): Observable<any> {
+    // let others know are datasource is ready
+    return this._pouchReady$.pipe(first(ready => ready));
   }
 
 }

@@ -25,15 +25,15 @@ export class ProjectsPage implements OnInit, OnDestroy {
               public cdr: ChangeDetectorRef) { }
 
   async ngOnInit() {
-    this.subscription = this.dataService.subscribeProjectsChanges()
-      .subscribe(doc => {
-        this.refresh();
-      });
-    //make projects null, so we are back to top
-    this.state.selectedProject = null;
-    this.refresh();
-    await waitMS(1000);
-    this.refresh();
+    console.log('Projects init');
+    this.state.waitForReady().subscribe(() => {
+      console.log('Projects init, ready');
+      this.subscription = this.dataService.subscribeProjectsChanges()
+        .subscribe(doc => {
+          this.refresh();
+        });
+      this.refresh();
+    });
   }
 
   selectItem(item) {

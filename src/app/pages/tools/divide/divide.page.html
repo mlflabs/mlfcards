@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>divide</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+
+    <ion-item>
+        <ion-textarea 
+          name="tesxt"
+          [(ngModel)]="text" 
+          placeholder="Chinese Text"></ion-textarea>
+      </ion-item>
+                              
+      <div padding text-center>
+          <ion-button (click)="divide()" size="large"  expand="block">Divide</ion-button>
+      </div>
+
+
+</ion-content>

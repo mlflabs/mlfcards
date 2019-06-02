@@ -6,7 +6,7 @@ import { PlayDefaultComponent } from './components/cards/play-default/play-defau
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'projects',
+    redirectTo: 'home',
     pathMatch: 'full'
   },
   {
@@ -14,15 +14,6 @@ const routes: Routes = [
     redirectTo: 'projects/list',
     pathMatch: 'full'
   },
-  {
-    path: 'home',
-    loadChildren: './home/home.module#HomePageModule'
-  },
-  {
-    path: 'list',
-    loadChildren: './list/list.module#ListPageModule'
-  },
-
   { path: 'login', loadChildren: './auth/pages/login/login.module#LoginPageModule' },
   { path: 'register', loadChildren: './auth/pages/register/register.module#RegisterPageModule' },
   { path: 'forgotPassword', loadChildren: './auth/pages/forgot-password/forgot-password.module#ForgotPasswordPageModule' },
@@ -37,11 +28,23 @@ const routes: Routes = [
       { path: 'p/:id',
         children: [
           { path: '',  loadChildren: './pages/projects/project/project.module#ProjectPageModule' },
-          
-
         ]},
     ]
   },
+  {
+    path: 'dict',
+    children: [
+      { path: '', loadChildren: './pages/dict/lookup/lookup.module#LookupPageModule' },
+      { path: ':id', loadChildren: './pages/dict/lookup/lookup.module#LookupPageModule' },
+      { path: 'word/:id', loadChildren: './pages/dict/word-detail/word-detail.module#WordDetailPageModule' },
+    ],
+  },
+  { path: 'divide', loadChildren: './pages/tools/divide/divide.module#DividePageModule' },
+  { path: 'insert-book', loadChildren: './pages/admin/insert-book/insert-book.module#InsertBookPageModule' },
+  { path: 'play-modal', loadChildren: './components/cards/play-modal/play-modal.module#PlayModalPageModule' },
+  { path: 'lookup', loadChildren: './pages/dict/lookup/lookup.module#LookupPageModule' },
+  { path: 'word-detail', loadChildren: './pages/dict/word-detail/word-detail.module#WordDetailPageModule' },
+  { path: 'home', loadChildren: './pages/home/home.module#HomePageModule' },
 ];
 
 @NgModule({

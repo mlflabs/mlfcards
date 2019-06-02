@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, throwError } from 'rxjs';
+import { BehaviorSubject, throwError, Subject, Observable } from 'rxjs';
 import { Platform } from '@ionic/angular';
 import { environment } from '../../environments/environment';
 import * as moment from 'moment';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Storage } from '@ionic/storage';
 import { isEqual } from 'lodash';
+import { first } from '../../../node_modules/rxjs/operators';
 
 // export const AUTH_TOKEN_KEY = 'auth-token';
 // export const AUTH_TOKEN_EXP = 'auth-token-exp';
@@ -44,6 +45,8 @@ export function guestUser() {
 })
 export class AuthService {
 
+  private _authReady = false;
+  private _authReady$ = new BehaviorSubject(this._authReady);
   public isAuthenticated = false;
   public isAuthenticated$  = new BehaviorSubject(false);
   public user$ = new BehaviorSubject<UserModel>(guestUser());
@@ -53,8 +56,11 @@ export class AuthService {
               public http: HttpClient,
               private plt: Platform) {
     this.plt.ready().then(async () => {
-      if( await this.checkLogin())
-        this.renewToken();// renew token only if we have saved credentials
+      if( await this.checkLogin() )
+        this.renewToken(); // renew token only if we have saved credentials
+
+      this._authReady = true;
+      this._authReady$.next(true);
     });
 
     this.isAuthenticated = false;
@@ -263,6 +269,9 @@ export class AuthService {
   }
 
 
+  waitForReady(): Observable<any> {
+    return this._authReady$.pipe(first(ready => ready));
+  }
 
 
 
