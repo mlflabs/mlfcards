@@ -6,18 +6,14 @@ import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 import { ProjectPage } from './project.page';
-import { ProjectEditPage } from '../project-edit/project-edit.page';
 import { ProjectsEditPageModule } from '../project-edit/project-edit.module';
 import { CardsModule } from '../../../components/cards/cards.module';
-import { EditCardComponent } from '../../../components/cards/edit-card/edit-card.component';
-import { PlayDefaultComponent } from '../../../components/cards/play-default/play-default.component';
 
 const routes: Routes = [
   {
     path: '',
     component: ProjectPage
   },
-  { path: 'play', component: PlayDefaultComponent },
 ];
 
 @NgModule({
@@ -33,7 +29,6 @@ const routes: Routes = [
     ProjectPage
   ],
   entryComponents: [
-    EditCardComponent
   ]
 })
 export class ProjectPageModule {}

@@ -5,15 +5,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardComponent } from './card/card.component';
 import { CardsComponent } from './cards/cards.component';
-import { PlayDefaultComponent } from './play-default/play-default.component';
-import { EditCardComponent } from './edit-card/edit-card.component';
 
 @NgModule({
   declarations: [
       CardComponent,
       CardsComponent,
-      EditCardComponent,
-      PlayDefaultComponent,
     ],
   imports: [
     CommonModule,
@@ -22,9 +18,7 @@ import { EditCardComponent } from './edit-card/edit-card.component';
   ],
   exports: [
     CardComponent,
-    EditCardComponent,
     CardsComponent,
-    PlayDefaultComponent,
   ]
 })
 export class CardsModule { }

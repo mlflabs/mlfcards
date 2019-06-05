@@ -57,14 +57,14 @@
         <ion-content>
           <ion-list>
             <ion-item><h3>Menu</h3></ion-item>
-            <ion-menu-toggle auto-hide="true" *ngFor="let p of appPages">
-              <ion-item [routerDirection]="'root'" [routerLink]="[p.url]">
+            
+              <ion-item  *ngFor="let p of appPages"
+                [routerDirection]="'root'" [routerLink]="[p.url]">
                 <ion-icon slot="start" [name]="p.icon"></ion-icon>
                 <ion-label>
                   {{p.title}}
                 </ion-label>
               </ion-item>
-            </ion-menu-toggle>
           </ion-list>
         </ion-content>
       </ion-menu>

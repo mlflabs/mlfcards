@@ -44,10 +44,10 @@ export class LoginPage implements OnInit {
         // this.router.navigate(['home']);
       } else {
         // lets display error
-        if(res.data.message){
+        if(res.data.message) {
           this.presentToast(res.data.message);
         }
-        else if(res.data.errors){
+        else if(res.data.errors) {
           // just display the first message
           res.data.errors.forEach(err => {
             this.presentToast(err.msg);
@@ -58,16 +58,16 @@ export class LoginPage implements OnInit {
       console.log(err);
     }
     this.isLoading = false;
-    setTimeout(()=>{
+    setTimeout(()=> {
       this.app.tick();
     },100);
   }
 
-  forgotPassword(){
+  forgotPassword() {
     this.router.navigate(['forgotPassword']);
   }
 
-  register(){
+  register() {
     this.router.navigate(['register']);
   }
 
@@ -79,14 +79,14 @@ export class LoginPage implements OnInit {
     toast.present();
   }
 
-  keyPressNameInput(event){
-    if(event.code === 'Enter'){
+  keyPressNameInput(event) {
+    if(event.code === 'Enter') {
       this.inputPassword.setFocus();
     }
   }
 
-  keyPressPasswordInput(event){
-    if(event.code === 'Enter'){
+  keyPressPasswordInput(event) {
+    if(event.code === 'Enter') {
       this.onSubmit();
     }
   }

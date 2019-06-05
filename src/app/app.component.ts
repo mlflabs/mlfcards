@@ -26,15 +26,10 @@ export class AppComponent {
       icon: 'albums'
     },
     {
-      title: 'Tools-Divide',
-      url: '/divide',
-      icon: 'list'
+      title: 'Settings',
+      url: '/settings',
+      icon: 'settings'
     },
-    {
-      title: 'Admin-Insert',
-      url: '/insert-book',
-      icon: 'add'
-    }
   ];
 
   constructor(
@@ -63,9 +58,12 @@ export class AppComponent {
     this.auth.isAuthenticated$.subscribe(state => {
       console.log('Checking user State, state:: ', state);
       if (state) {
-        //this.appPages = this._appPages.filter(p => p.auth === true);
-        this.router.navigate(['']);
-
+        // this.appPages = this._appPages.filter(p => p.auth === true);
+        // this.router.navigate(['']);
+        // if we are at login screen move to home
+        console.log(this.router.routerState.snapshot.url);
+        if(this.router.routerState.snapshot.url === '/login')
+          this.router.navigate(['']);
         this.isGuest = false;
       } else {
         // add login page

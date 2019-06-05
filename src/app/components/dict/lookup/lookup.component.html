@@ -1,0 +1,45 @@
+<div>
+    <ion-grid>
+      <ion-row *ngIf="sync < 100" >
+          <ion-progress-bar   
+          value="{{sync/100}}"
+          color="secondary"></ion-progress-bar>
+          <ion-label color="secondary">
+            Downloading dictionary: {{sync}}%.
+          </ion-label>
+
+      </ion-row>
+      <ion-row  *ngIf="sync >= 100" >
+        <ion-col size="auto">
+            <ion-button 
+                (click)="changeSearchMode()"
+                shape="round">{{searchMode}}</ion-button>
+        </ion-col>
+        <ion-col align-self-start>
+            <ion-input 
+                placeholder="Search"
+                clear-input="true"
+                debounce="500"
+                [(ngModel)]="searchText"
+                (ionChange)="textChange()"
+                autofocus="true"></ion-input>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+  
+
+
+  <ion-list lines="inset" 
+    *ngFor="let w of words" >
+      <ion-item (click)="selectWord(w)" detail >
+      <ion-label color="primary" >
+          <H3>{{w.source}}, {{w.pinyin}}</H3>
+          <ion-note [innerHTML]="printDef(w)"></ion-note>
+
+        </ion-label>
+        <ion-icon *ngIf="w.dic === 'g'" 
+            slot="end" size="small" name="logo-google"></ion-icon>
+      </ion-item>
+  </ion-list>       
+</div>

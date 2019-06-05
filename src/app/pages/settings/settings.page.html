@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Settings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+    <ion-list *ngIf="settings && localSettings">
+        
+        <!--    
+        <ion-list-header>
+            <ion-label color="primary"><h2>Study Settings</h2></ion-label>
+          </ion-list-header>
+        <ion-item>
+            <ion-label>Chinese Offline Mode:</ion-label>
+            <ion-input 
+              placeholder="Download chinese dictionary"
+              debounce="500"
+              [(ngModel)]="settings.offline"
+              (ionChange)="settingsChanged()"></ion-input>
+        </ion-item>
+      -->
+
+        <ion-list-header>
+            <ion-label color="primary"><h2>Dictionary Settings</h2></ion-label>
+        </ion-list-header>
+        <ion-item>
+            <ion-label>Chinese Offline Mode:
+            <br>
+            <ion-note>Download chinese dictionary</ion-note>
+            </ion-label>
+            <ion-toggle [(ngModel)]="localSettings.chinese_offline" 
+                        (ionChange)="localSettingsChanged()"
+                        slot="end"></ion-toggle>
+        </ion-item>
+        
+    </ion-list>
+</ion-content>

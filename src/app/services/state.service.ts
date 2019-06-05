@@ -9,6 +9,7 @@ import { CARD_COLLECTION, CardItem } from '../models';
 import { HttpUrlEncodingCodec } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { addDays } from '../utils';
+import { forIn, valuesIn } from 'lodash';
 
 @Injectable({
   providedIn: 'root'
@@ -208,7 +209,7 @@ export class StateService {
       if(!c.proficiencyLevel) c.proficiencyLevel = 0;
 
       c.sessions[endDate] = {
-        gamePoints: c.currentGamePoints,
+        gameSidePoints: c.currentSidePoints,
         wrongAnswers: c.currentWrongAnswers,
         correctAnswers: c.currentCorrectAnswers,
         notKnow: c.currentNotKnow
@@ -218,7 +219,11 @@ export class StateService {
       //see if we got any wrong answers
       if(c.currentWrongAnswers === 0) {
         //did we get all game pooints required
-        if(c.currentGamePoints === environment.gamePoinsRequired) {
+        let points = 0;
+        valuesIn(c.currentSidePoints).forEach(v => {
+          points += Number(v);
+        });
+        if(points >= environment.gamePoinsRequired) {
           // lets move up a level, if level is 0, card is finished,
           // no more studying
           c.proficiencyLevel++;
@@ -241,7 +246,7 @@ export class StateService {
         environment.proficiencyLevels[c.proficiencyLevel]).getTime();
 
       //remove old game stats
-      delete c.currentGamePoints;
+      delete c.currentSidePoints;
       delete c.currentWrongAnswers;
       delete c.currentCorrectAnswers;
       delete c.currentNotKnow;

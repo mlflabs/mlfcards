@@ -15,8 +15,9 @@ export class LookupPage implements OnInit, OnDestroy {
   searchText = '';
   words = [];
 
-  private navSub;
-  private dictSub;
+  private _navSub;
+  private _dictSub;
+  private _syncSub;
 
   constructor(public dictService: DictService,
               public route: ActivatedRoute,
@@ -29,15 +30,24 @@ export class LookupPage implements OnInit, OnDestroy {
     if(this.searchText !== '') {
       this.textChange();
     }
-    this.dictSub = this.dictService.waitForReady()
+    this._dictSub = this.dictService.waitForReady()
       .subscribe(ready => {
-        if(ready)
+        if(ready){
           this.loadNavSub();
+          this.loadSyncSub();
+        }
       });
   }
 
+  loadSyncSub() {
+    this._syncSub.subscribe(s => {
+      console.log(s);
+      this.sync = s;
+    });
+  }
+
   loadNavSub() {
-    this.navSub = this.route.params.subscribe(params => {
+    this._navSub = this.route.params.subscribe(params => {
       const word = params['id']; // (+) converts string 'id' to a number
 
       if(word !== null && word !== '') {
@@ -48,10 +58,12 @@ export class LookupPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if(this.navSub && !this.navSub.closed)
-      this.navSub.unsubscribe();
-    if(this.dictSub && !this.dictSub.closed)
-      this.dictSub.unsubscribe();
+    if(this._navSub && !this._navSub.closed)
+      this._navSub.unsubscribe();
+    if(this._dictSub && !this._dictSub.closed)
+      this._dictSub.unsubscribe();
+    if(this._syncSub && !this._syncSub.closed)
+      this._syncSub.unsubscribe();
   }
 
   selectWord(w) {
@@ -64,7 +76,7 @@ export class LookupPage implements OnInit, OnDestroy {
   }
   async textChange(e = {}) {
     console.log(this.searchText);
-    this.words =  await this.dictService.search(this.searchText);
+    // this.words =  await this.dictService.search(this.searchText);
     console.log(this.words);
     this.cdr.detectChanges();
   }

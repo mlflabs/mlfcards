@@ -1,48 +1,134 @@
 import { Injectable } from '@angular/core';
 import PouchDB from 'pouchdb';
 import PouchDBFind from 'pouchdb-find';
-import { Observable, fromEvent, Subject, BehaviorSubject } from 'rxjs';
-import { map, debounceTime, filter, first } from 'rxjs/operators';
+import { Observable, fromEvent, Subject, BehaviorSubject, throwError } from 'rxjs';
+import { map, debounceTime, filter, first, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 import { Doc, PROJECT_SERVICE, PROJECT_INDEX_SERVICE, ProjectItem, LASTCHAR, DIV } from '../models';
 import { generateCollectionId, generateShortCollectionId, generateShortUUID, waitMS } from '../utils';
 import { isEqual } from 'lodash';
 import { AuthService } from '../auth/auth.service';
 import { environment } from '../../environments/environment';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Platform } from '@ionic/angular';
 
 PouchDB.plugin(PouchDBFind);
 import PouchDBQuickSearch from 'pouchdb-quick-search';
+import { SettingsService } from './settings.service';
+
 //PouchDB.plugin(require('pouchdb-quick-search'));
 PouchDB.plugin(PouchDBQuickSearch);
 
+// tslint:disable-next-line:class-name
+class searchrequest   {
+  public text;
+  public source;
+  public target;
+  public hasOffline;
+}
 @Injectable({
   providedIn: 'root'
 })
 export class DictService {
   private _pouch: any;
+  private _pouch_sync: any;
   public ready = false;
   private _pouchReady$ = new BehaviorSubject(this.ready);
   public sync$ = new BehaviorSubject(100);
 
-  private forceAddChars = {
-    儿: 'er',
-    了: 'le',
-  };
-  private punctuationMarks = ['《','》','。','，','（','）','；',':','”','“',
-  '.',',','+','！','!','？','?','”','、','：','一','…','‘','’', '', '—'];
+  public localDownloaded = false;
+  public offline = false;
+
+
+  public searchText$ = new Subject<searchrequest>();
+  public searchResults$;
 
   private _localPouchOptions = {
     revs_limit: 2,
     auto_compaction: true
   };
 
-  constructor(public authService: AuthService) {
+  constructor(public authService: AuthService,
+              public http: HttpClient,
+              public settingsService: SettingsService) {
+    console.log('************************** Dict Setup:');
     this.authService.waitForReady().subscribe(() => {
-      this.initPouch('pouch_dictionary');
+      //load settings
+      this.initSettings();
+    });
+
+
+
+    this.searchResults$ = this.searchText$.pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        switchMap( r => this.searchService(r))
+    );
+   }
+
+   initSettings() {
+    console.log('Dict, init SEttings');
+    this.settingsService.localSettings$.subscribe(s => {
+      if(s['chinese_offline'] !== this.offline) {
+        this.offline = s['chinese_offline'];
+        if(this.offline) {
+          this.initPouch('pouch_dictionary');
+        }
+        else {
+          try {
+            if(this._pouch_sync) this._pouch_sync.cancel();
+            this._pouch = null;
+          }
+          catch(e) {
+            console.log(e.message);
+          }
+        }
+      }
     });
    }
 
-   public async search(value) {
+   public async search(text, target, source, hasOffline = this.offline) {
+    this.searchText$.next({
+      text:text,
+      source:source,
+      target: target,
+      hasOffline: hasOffline
+    });
+
+     if( this.offline &&
+        (target === 'en' || 'zh-CN') &&
+        (source === 'en' || 'zh-CN')) {
+
+          console.log('Searching offline');
+          if(source === 'en')
+            return await this.searchEnglish(text);
+          if(source === 'zh-CN')
+            return await this.searchChinese(text);
+     }
+     else {
+       return false;
+     }
+
+   }
+
+   public async searchService(req) {
+    console.log('SearchService: ', req);
+    return this.http.post(environment.translateApiUrl+'/dict/translate', {
+      text: req.text,
+      source: req.source,
+      target: req.target,
+      hasOffline: req.hasOffline,
+      token: this.authService.user.token}
+    ).toPromise();
+   }
+
+   private handleError(error: HttpErrorResponse) {
+     console.log(error.error.message);
+
+     return throwError('Oops, no results, please try again at later time');
+   }
+
+   /*
+   public async searchOffline(value, target) {
     // determine if english or chinese
     if(await this.isChineseWord(value.substring(0,1))) {
       console.log('Is chinese word');
@@ -66,70 +152,48 @@ export class DictService {
     }
 
    }
+   */
 
-   public async searchChinese(value: string) {
-    console.log('searching chinese');
-    let space = ' ';
-    let buffer = 0;
-
-    const words = [];
-    let tempWord, prevWord;
-    let p = 0; // current position
-
-    // remove all punctuations, and spaces
-    const valueA = Array.from(value);
-    const text = valueA.filter(c => !this.isPunctuation(c)).join('')+' ';
-    const total = text.length;
-
-    while( p < total ) {
-      let exists = true;
-      let length = 1;
-      let w;
-
-      tempWord = false;
-      while(exists) {
-        space = ' ';
-
-        w = text.substr(p, length);
-
-        prevWord = tempWord;
-        tempWord = await this.isChineseWord(w);
-        if(tempWord) {
-          length ++;
-        }
-        else {
-          if(prevWord)
-            words.push(prevWord);
-          exists = false;
-        }
-
-        if((p+length) > total) {
-          //we are at the end, just exit
-          exists = false;
-          //lastchar = true;
-        }
-      }
-      if(length === 1)
-        buffer = 1;
-      else
-        buffer = length - 1;
-      p += buffer;
+   public async searchChinese(text: string) {
+    try {
+      console.log('searching chinese', text);
+      const res = await this.isChineseWord(text);
+      console.log(res);
+      return [{
+        source: res._id,
+        pinyin: res.pinyin,
+        def: res['def']['cc']||res['def']['usr'],
+      }];
     }
-    return words;
+    catch(e) {
+      return [];
+    }
   }
 
   public async searchEnglish(value) {
      try {
-      return await this._pouch.search({
+      console.log('Searching English: ', value);
+      const res = await this._pouch.search({
         query: value,
         highlighting: true,
-        highlighting_pre: '<em>',
-        highlighting_post: '</em>',
+        // highlighting_pre: '<em>',
+        // highlighting_post: '</em>',
         limit: 15,
         skip: 0,
         include_docs: true,
         fields: ['_id', 'def.cc', 'def.g', 'def.usr']
       });
+
+      console.log('English search: ', res);
+      const words = res.rows.map(d => {
+        return {
+          source: d.doc._id,
+          pinyin: d.doc.pinyin,
+          def: d.doc['def']['cc']||d.doc['def']['usr'],
+          highlighting:  d.highlighting['def.cc']||d.highlighting['def.usr']
+        };
+      });
+      return words.reverse();
      }
      catch(e) {
        console.log('Search Error: ', e.message);
@@ -149,11 +213,7 @@ export class DictService {
     }
   }
 
-  public isPunctuation(char) {
-    if(this.punctuationMarks.find(c => c === char))
-      return true;
-    return false;
-  }
+
 
   public async getDoc(id) {
     try {
@@ -188,10 +248,10 @@ export class DictService {
 
     // build search indexes
     const searchindex = await this._pouch.search({
-      fields: ['_id', 'def.cc', 'def.g', 'def.usr'],
+      fields: ['def.cc', 'def.usr'],
       build: true
     });
-    console.log('Search Index: ', searchindex);
+    console.log('************** Search Index: ', searchindex);
   }
 
   syncRemote() {
@@ -204,7 +264,7 @@ export class DictService {
 
     };
 
-    this._pouch.replicate.from(remoteDB, opts)
+    this._pouch_sync =  this._pouch.replicate.from(remoteDB, opts)
       .on('change',  (change) => {
         console.log('Remote Sync: ', change);
         console.log(change.pending);

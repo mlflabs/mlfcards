@@ -10,15 +10,16 @@ export const environment = {
   auth_api: 'https://auth.mlflabs.com',
   couch_db: 'http://localhost:3001/api_cards',
   dict_db: 'https://dict.mlflabs.com/mlf_dict',
+  translateApiUrl: 'https://dictapi.mlflabs.com/',
   access_meta_key: 'meta_access',
   server_sync_debounce_time: 10000,
 
-  translateApiUrl: 'http://localhost:3050',
 
   //game settings
-  gamePoinsRequired: 2, //how many points before removing card
+  gamePoinsRequired: 6, //if reached these points proficiency level will go up
+  sidesPointRequired: {1:1, 2:1, 3:1},
   gameEndCardsRemaining: 2,// not all cards need to be studied, how many can be left
-  cardCompletionPoints: 5, //how many points before removing card
+  cardCompletionPoints: 6, //how many points before removing card
   //spaced repetition
   proficiencyLevels: [1,2,4,5],//number of days between studying
   // how many wrong answers for us to go back on profficiency level

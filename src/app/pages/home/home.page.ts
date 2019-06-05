@@ -12,6 +12,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   sync = 100;
   searchText = '';
+  dicSyncSub;
 
   constructor(public dictService: DictService,
               public dataService: DataService,
@@ -19,7 +20,7 @@ export class HomePage implements OnInit, OnDestroy {
               public navCtr: NavController) { }
 
   ngOnInit() {
-    this.dictService.sync$.subscribe(s => {
+    this.dicSyncSub = this.dictService.sync$.subscribe(s => {
       console.log('dic sync: ', s);
       this.sync = s;
       this.cdr.detectChanges();
@@ -29,8 +30,11 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async startStudy() {
-    const cards = await this.dataService.getStudyCards();
-    console.log('Study Cards:: ', cards);
+    // const cards = await this.dataService.getStudyCards();
+
+    //console.log('Study Cards:: ', cards);
+   this.navCtr.navigateForward('study/default');
+
   }
 
   async textChange(e = {}) {
@@ -39,6 +43,8 @@ export class HomePage implements OnInit, OnDestroy {
 
 
   ngOnDestroy(): void {
+    if(this.dicSyncSub && !this.dicSyncSub.closed)
+      this.dicSyncSub.unsubscribe();
   }
 
 }

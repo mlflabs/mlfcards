@@ -16,14 +16,23 @@ import { IonicStorageModule } from '@ionic/storage';
 import { HttpClientModule } from '@angular/common/http';
 import { CardsModule } from './components/cards/cards.module';
 import { ProjectPageModule } from './pages/projects/project/project.module';
+import { EditCardComponent } from './components/cards/edit-card/edit-card.component';
+import { FormsModule } from '../../node_modules/@angular/forms';
+
 
 @NgModule({
-  declarations: [AppComponent],
-  entryComponents: [],
+  declarations: [
+    AppComponent,
+    EditCardComponent,
+  ],
+  entryComponents: [
+    EditCardComponent,
+  ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    FormsModule,
     IonicStorageModule.forRoot(),
     IonicModule.forRoot(),
     AppRoutingModule

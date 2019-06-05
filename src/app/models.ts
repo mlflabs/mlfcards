@@ -56,7 +56,9 @@ export class CardItem extends Doc {
   //public studied_success?: number;
   //public studied_failed?: number;
 
-  public currentGamePoints?: number;
+  public currentSidePoints = {}; // object of numbers each key is side number
+
+  //public currentGamePoints?: number;
   public currentWrongAnswers?: number;
   public currentCorrectAnswers?: number;
   public currentNotKnow?: number;

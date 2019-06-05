@@ -6,6 +6,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 import { HomePage } from './home.page';
+import { LookupComponent } from '../../components/dict/lookup/lookup.component';
+import { EditCardComponent } from '../../components/cards/edit-card/edit-card.component';
 
 const routes: Routes = [
   {
@@ -15,12 +17,19 @@ const routes: Routes = [
 ];
 
 @NgModule({
+  declarations: [
+    HomePage,
+    LookupComponent,
+  ],
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
     RouterModule.forChild(routes)
   ],
-  declarations: [HomePage]
+  entryComponents: [
+    HomePage,
+    LookupComponent,
+  ]
 })
 export class HomePageModule {}

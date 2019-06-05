@@ -1,5 +1,7 @@
 {
   "name": "mlfcards",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "angular"
 }

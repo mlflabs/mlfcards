@@ -25,7 +25,7 @@ const routes: Routes = [
     RouterModule.forChild(routes)
   ],
   entryComponents: [
-    
+
   ]
 })
 export class ProjectsPageModule {}

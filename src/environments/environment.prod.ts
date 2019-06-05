@@ -6,15 +6,16 @@ export const environment = {
   auth_api: 'https://auth.mlflabs.com',
   couch_db: 'https://api.mlflabs.com/mlfapi',
   dict_db: 'https://dict.mlflabs.com',
+  translateApiUrl: 'https://dictapi.mlflabs.com/',
   access_meta_key: 'meta_access',
   server_sync_debounce_time: 10000,
-  translateApiUrl: 'http://localhost:3050',
 
 
   // game settings
-  gamePoinsRequired: 2, //how many points before removing card
-  gameEndCardsRemaining: 3,
-  cardCompletionPoints: 5,
+  gamePoinsRequired: 2, //if reached these points proficiency level will go up
+  gameEndCardsRemaining: 2,
+  cardCompletionPoints: 6,
+  sidesPointRequired: {1:1, 2:1, 3:1},
   // spaced repetition
   proficiencyLevels: [1,2,5,10,20,30],
   // how many wrong answers for us to go back on profficiency level

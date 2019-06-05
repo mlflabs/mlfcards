@@ -6,7 +6,7 @@ import { Observable, fromEvent, Subject, BehaviorSubject } from 'rxjs';
 import { map, debounceTime, filter, first } from 'rxjs/operators';
 import { Doc, PROJECT_SERVICE, PROJECT_INDEX_SERVICE, ProjectItem, LASTCHAR, DIV, CARD_COLLECTION, CardItem } from '../models';
 import { generateCollectionId, generateShortCollectionId, generateShortUUID, waitMS } from '../utils';
-import { isEqual } from 'lodash';
+import { isEqual, uniqBy } from 'lodash';
 import { AuthService } from '../auth/auth.service';
 import { environment } from '../../environments/environment';
 
@@ -79,7 +79,7 @@ export class DataService {
     }
   }
 
-  async getStudyCards(date = Date.now()) {
+  async getStudyCards(date = Date.now(), unique = false) {
     try {
       // const all = await this._pouch.allDocs({ include_docs: true });
       // console.log(all);
@@ -90,6 +90,10 @@ export class DataService {
           }
         }
       });
+      if(unique) {
+        //remove any duplicates
+        return uniqBy(uniqBy(res['docs'], 'side1'), 'side2');
+      }
       return res['docs'];
     }
     catch (e) {
@@ -104,7 +108,7 @@ export class DataService {
     try {
       //make card
       let def = word['def'].cc || word['def'].g ||
-      word['def'].usr || ' ';
+          word['def'].usr || ' ';
       def = def.substring(0, def.indexOf('|'));
 
       const card = new CardItem({
@@ -125,13 +129,15 @@ export class DataService {
     }
   }
 
-  async saveCard(card: CardItem, project: ProjectItem) {
+  async saveCard( card: CardItem,
+                  project: ProjectItem = new ProjectItem({_id: 'p|pi|default', childId: 'p|default'}),
+                  syncRemote = true) {
     //add some necessary data
     if(!card.nextStudySession) {
       card.nextStudySession = 1; //need a valid num, for indexing
     }
 
-    return await this.saveInProject(card,project, CARD_COLLECTION);
+    return await this.saveInProject(card,project, CARD_COLLECTION, null, null, syncRemote);
   }
 
 
@@ -356,6 +362,18 @@ export class DataService {
     }
   }
 
+  async saveSettings(doc) {
+    try {
+      const settings = await this._pouch.get('settings');
+      const newSettings = Object.assign(settings, doc, { _rev: settings._rev });
+      console.log('Settings:: ', newSettings);
+      this._pouch.put(newSettings);
+    }
+    catch(e) {
+      console.log('Error saving settings Doc: ', e.message);
+    }
+  }
+
   async save(doc, collection:string='', oldDoc = null, attachment = null, syncRemote=true): Promise<any> {
 
     // if its a design doc, or query, skip it
@@ -537,7 +555,13 @@ export class DataService {
     catch(e) {
       console.log('Error creating settings Doc: ', e);
       if(e.reason === 'missing') {
-        this._pouch.put({_id: 'settings', app: environment.app_id});
+        const s = {
+          _id: 'settings',
+          app: environment.app_id,
+          meta_access: ['u|' + this.authService.getUsername()]
+        };
+        console.log(s);
+        this._pouch.put(s);
       }
     }
     // create other default docs
@@ -590,7 +614,7 @@ export class DataService {
       });
   }
 
-  waitForReady(): Observable<any> {
+  public waitForReady(): Observable<any> {
     // let others know are datasource is ready
     return this._pouchReady$.pipe(first(ready => ready));
   }
