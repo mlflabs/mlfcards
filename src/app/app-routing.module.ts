@@ -29,7 +29,7 @@ const routes: Routes = [
       { path: 'p/:id',
         children: [
           { path: '',  loadChildren: './pages/projects/project/project.module#ProjectPageModule' },
-          { path: 'play', loadChildren: './pages/play/play-default/play-default.module#PlayDefaultPageModule' },
+          //{ path: 'play', loadChildren: './pages/play/play-default/play-default.module#PlayDefaultPageModule' },
         ]},
     ]
   },
@@ -54,7 +54,6 @@ const routes: Routes = [
   { path: 'word-detail', loadChildren: './pages/dict/word-detail/word-detail.module#WordDetailPageModule' },
   { path: 'home', loadChildren: './pages/home/home.module#HomePageModule' },
   { path: 'edit', loadChildren: './pages/cards/edit/edit.module#EditPageModule' },
-  { path: 'play-default', loadChildren: './pages/play/play-default/play-default.module#PlayDefaultPageModule' },
   { path: 'test', loadChildren: './pages/test/test.module#TestPageModule' },
 
  // { path: 'dict', loadChildren: './pages/dict/dict/dict.module#DictPageModule' },

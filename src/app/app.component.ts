@@ -21,7 +21,7 @@ export class AppComponent {
       icon: 'home'
     },
     {
-      title: 'Projects',
+      title: 'Study Lists',
       url: '/projects/list',
       icon: 'albums'
     },
@@ -87,7 +87,7 @@ export class AppComponent {
   }
 
   goToEditProgile() {
-
+    console.log('Edit profile');
   }
 
   logout() {

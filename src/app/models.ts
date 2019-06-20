@@ -54,21 +54,46 @@ export class CardItem extends Doc {
   public studyFinished?: boolean;
   //public studied_total?: number;
   //public studied_success?: number;
-  //public studied_failed?: number;
+  //public studied_failed?: numbeter;
 
-  public currentSidePoints = {}; // object of numbers each key is side number
+
+ // study types
+    // stage, ex.
+    // 0. pinyin -> meaning
+    // 1. char -> pinyin
+    // 2. pinyin -> char
+    // 3 . meaning -> char
+    // 4. char -> meaning
+    //
+  public currentStudyStage = 0;
 
   //public currentGamePoints?: number;
-  public currentWrongAnswers?: number;
-  public currentCorrectAnswers?: number;
-  public currentNotKnow?: number;
+  public currentWrongAnswers = 0;
+  public currentCorrectAnswers = 0;
+  public currentNotKnow = 0;
 
-  public sessions?: object;
+  public totalWrongAnswers  = 0;
+  public totalCorrectAnswers = 0;
+  public totalNotKnow = 0;
+
+
+
+  public sessions = {};
 
   public projectId: number;
   public meta_access?;
 }
 
+export const getProjectIdFromChildId = (id: string) => {
+  try {
+    const a = id.split('|');
+    return a[0] + '|' + a[1];
+  }
+  catch(e) {
+    console.log(e.message);
+    return null;
+  }
+};
 
 export class FileItem extends Doc {
   public name?: string;

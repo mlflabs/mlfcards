@@ -1,3 +1,5 @@
+import { BehaviorSubject } from '../../node_modules/rxjs';
+
 export class Utils {
 }
 
@@ -106,5 +108,72 @@ export const addDays = (date: Date, days: number): Date => {
   d.setDate(d.getDate() + days);
   return d;
 };
+
+
+
+export class CountDownTimer {
+  private duration;
+  public granularity;
+  public progress = 0;
+  public tick$ = new BehaviorSubject(0);
+  public status$ = new BehaviorSubject('stopped');
+  public running;
+
+  //duration in seconds
+  constructor(duration, granularity = 1000) {
+    this.duration = duration * 1000;
+    this.granularity = granularity;
+    this.running = false;
+  }
+
+  pause() {
+    console.log('Paused');
+    this.running = false;
+    this.status$.next('paused');
+  }
+
+  continue() {
+    console.log('Continue');
+    if (this.running) {
+      return;
+    }
+    this.running = true;
+    this.status$.next('running');
+    this.runInterval();
+  }
+
+  start() {
+    console.log('Starting');
+    if (this.running) {
+      return;
+    }
+    this.running = true;
+    this.progress = this.duration;
+    this.status$.next('running');
+    this.tick$.next(Math.floor(this.progress/1000));
+
+    this.runInterval();
+  }
+
+  async runInterval() {
+    if(!this.running) {
+      return;
+    }
+    if(this.progress <= 0) {
+      this.running = false;
+      this.tick$.next(0);
+      this.status$.next('ended');
+      return;
+    }
+
+    await waitMS(this.granularity);
+
+    this.progress -= this.granularity;
+    this.tick$.next(Math.floor(this.progress/1000));
+    if(this.running)
+      this.runInterval();
+  }
+}
+
 
 

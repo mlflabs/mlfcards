@@ -1,15 +1,13 @@
 import { Injectable } from '@angular/core';
 import PouchDB from 'pouchdb';
 import PouchDBFind from 'pouchdb-find';
-import { Observable, fromEvent, Subject, BehaviorSubject, throwError } from 'rxjs';
-import { map, debounceTime, filter, first, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
-import { Doc, PROJECT_SERVICE, PROJECT_INDEX_SERVICE, ProjectItem, LASTCHAR, DIV } from '../models';
-import { generateCollectionId, generateShortCollectionId, generateShortUUID, waitMS } from '../utils';
-import { isEqual } from 'lodash';
+import { Observable, Subject, BehaviorSubject, throwError } from 'rxjs';
+import { map, debounceTime,  first, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import {  waitMS } from '../utils';
 import { AuthService } from '../auth/auth.service';
 import { environment } from '../../environments/environment';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Platform } from '@ionic/angular';
+
 
 PouchDB.plugin(PouchDBFind);
 import PouchDBQuickSearch from 'pouchdb-quick-search';
@@ -112,13 +110,15 @@ export class DictService {
 
    public async searchService(req) {
     console.log('SearchService: ', req);
-    return this.http.post(environment.translateApiUrl+'/dict/translate', {
+    const res = this.http.post(environment.dictApiUrl+'/dict/t', {
       text: req.text,
       source: req.source,
       target: req.target,
       hasOffline: req.hasOffline,
       token: this.authService.user.token}
     ).toPromise();
+
+    return res;
    }
 
    private handleError(error: HttpErrorResponse) {

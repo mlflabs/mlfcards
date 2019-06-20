@@ -1,11 +1,27 @@
-<!--
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
     <ion-title>Study</ion-title>
   </ion-toolbar>
 </ion-header>
--->
+
 <ion-content padding>
+
+  <!-- Paused -->
+  <div *ngIf="screen == 'paused'">
+      <h1>Paused </h1>
+      <ion-button size="large" 
+                  expand="full" 
+                  (click)="continueGame()" >Continue</ion-button>
+      <ion-button size="large" 
+                  expand="full" 
+                  color="secondary" 
+                  (click)="endGame()" >Stop and Leave</ion-button>
+  </div>
+    
+    
     <!-- Strt Message-->
     <div *ngIf="screen == 'start'">
       Ready to Start<BR>
@@ -23,6 +39,11 @@
     
     <div *ngIf="screen == 'end'">
       <h2>Game Stats</h2>
+      <h3>Total Answers: {{totalCorrectAnswers+totalWrongAnswers+totalDontKnow}}</h3>
+      <h3>Total Correct Answers: {{totalCorrectAnswers}}</h3>
+      <h3>Total Incorrect Answers: {{totalWrongAnswers}}</h3>
+      <h3>Total Don't Know: {{totalDontKnow}}</h3>
+      <br />
       <ion-button size="large" expand="full" [disabled]="!canPlay()" (click)="startGame()" >Play Again</ion-button>
       <ion-button size="large" expand="full" color="secondary" (click)="cancelGame()" >Leave</ion-button>
       <ion-label *ngIf="!canPlay()" color="secondary">Your all done for now, no more cards to study.</ion-label>
@@ -33,38 +54,71 @@
     </div>
     
     
-    <!-- Game-->
+    <!-- Game -->
     <div *ngIf="screen == 'play'">
-    <ion-card>
+    <ion-card style="height: 100%;">
     <ion-card-header>
-        <ion-card-subtitle> Cards Remaining: {{printRemainingCards()}}</ion-card-subtitle>
-        <ion-card-title>{{ printSide(currentAnswerCard, true) }}</ion-card-title>
-      </ion-card-header>
+        <ion-card-title>
+            {{ printSide(currentAnswerCard, true) }}</ion-card-title>
+        <ion-card-subtitle></ion-card-subtitle>
+    </ion-card-header>
     
     <ion-card-content>
-          <ion-grid>
+        <!--
+          <ion-note> Cards Remaining: {{printRemainingCards()}}</ion-note>
+        -->
+        
+        <ion-progress-bar   
+            value="{{ printProgress() }}"
+            color="secondary"></ion-progress-bar>
+          <ion-grid style="height: 100%;">
+              <!--{{ cards.length }}
+              {{ totalCards }}
+              {{ currentCards.length }}
+              {{ (totalCards - currentCards.length)/(totalCards - gameEndCardsRemaining) }}
+              -->
               <ion-row>
                 <ion-col>
                   <ion-button [color]="colors[0]" (click)="processAnswer(slots[0])" size="large" 
                       expand="full" [disabled]="screen2 != 'playing'">
-                        {{ printSide(slots[0]) }}</ion-button>
+                        {{ printSide(slots[0]) }}
+                        <span *ngIf="screen2 === 'results' && correctCardScreen===0">
+                          {{printAnswerSide(slots[0])}}
+                        </span>
+                    </ion-button>
                 </ion-col>
+              </ion-row>
+              <ion-row>
                 <ion-col>
                   <ion-button [color]="colors[1]" (click)="processAnswer(slots[1])" size="large" 
                       expand="full" [disabled]="screen2 != 'playing'">
-                        {{ printSide(slots[1]) }}</ion-button>
+                        {{ printSide(slots[1]) }}
+                        <span *ngIf="screen2 === 'results' && correctCardScreen===1">
+                          {{printAnswerSide(slots[1])}}
+                        </span>
+                      </ion-button>
                 </ion-col>
               </ion-row>
               <ion-row>
                   <ion-col>
                     <ion-button [color]="colors[2]" (click)="processAnswer(slots[2])" size="large" 
                         expand="full" [disabled]="screen2 != 'playing'">
-                          {{ printSide(slots[2]) }}</ion-button>
+                          {{ printSide(slots[2]) }}
+                        <span *ngIf="screen2 === 'results' && correctCardScreen===2">
+                          {{printAnswerSide(slots[2])}}
+                        </span>
+                      </ion-button>
                   </ion-col>
+                </ion-row>
+                <ion-row>
                   <ion-col>
                     <ion-button [color]="colors[3]" (click)="processAnswer(slots[3])" size="large" 
                         expand="full" [disabled]="screen2 != 'playing'">
-                          {{ printSide(slots[3]) }}</ion-button>
+                          {{ printSide(slots[3]) }}
+                        <span *ngIf="screen2 === 'results' && correctCardScreen===3">
+                          {{printAnswerSide(slots[3])}}
+                        </span>
+                      </ion-button>
                   </ion-col>
               </ion-row>
           </ion-grid>
@@ -74,9 +128,9 @@
                       (click)="processAnswer(null)"
                       expand="full">Don't Know</ion-button>
           <ion-button *ngIf="screen2 == 'playing'"
-                      (click)="selectRandomCards()" 
+                      (click)="pauseGame()" 
                       color="danger" 
-                      expand="full">Stop</ion-button>
+                      expand="full">Pause</ion-button>
     
           <ion-button *ngIf="screen2 == 'results'"
                       color="secondary" 
@@ -84,6 +138,10 @@
                       expand="full">Continue</ion-button>
       </ion-card-content>
     </ion-card>
+    <ion-fab vertical="top" horizontal="end" slot="fixed">
+        <ion-fab-button> {{ timerValue }}
+        </ion-fab-button>
+      </ion-fab>
     </div>
     </ion-content>
     

@@ -3,9 +3,8 @@ import { ActivatedRoute } from '@angular/router';
 import { NavController, ModalController } from '@ionic/angular';
 import { StateService } from '../../../services/state.service';
 import { DataService } from '../../../services/data.service';
-import { ProjectEditPage } from '../project-edit/project-edit.page';
 import { EditCardComponent } from '../../../components/cards/edit-card/edit-card.component';
-import { ACTION_SAVE, ACTION_REMOVE, CARD_COLLECTION, ProjectItem } from '../../../models';
+import { ProjectItem } from '../../../models';
 
 
 @Component({
@@ -87,17 +86,6 @@ export class ProjectPage implements OnInit, OnDestroy {
       componentProps: { item: card, showHeader: true}
     });
     modal.present();
-    const res = await modal.onDidDismiss();
-    const data = res.data || null;
-    if(data) {
-      if(data['action'] === ACTION_SAVE) {
-        console.log('Saving:: ', data.item, this._project, CARD_COLLECTION);
-        this.dataService.saveCard( data.item, this._project);
-      }
-      else if(data['action'] === ACTION_REMOVE && data['item']) {
-        this.dataService.remove(data.item);
-      }
-    }
   }
 
 

@@ -81,15 +81,20 @@ export class DataService {
 
   async getStudyCards(date = Date.now(), unique = false) {
     try {
+      const docs = await this._pouch.allDocs();
+      console.log(date);
+      console.log(docs);
       // const all = await this._pouch.allDocs({ include_docs: true });
       // console.log(all);
       const res =  await this._pouch.find({
         selector: {
           nextStudySession: {
-            $lte:date
+            $lte:date,
+            $gt: 0,
           }
         }
       });
+      console.log('GetStudyCards RES:: ', res);
       if(unique) {
         //remove any duplicates
         return uniqBy(uniqBy(res['docs'], 'side1'), 'side2');
@@ -195,6 +200,14 @@ export class DataService {
     }
   }
 
+  async getProjectFromChildId(id) {
+    const pid = PROJECT_SERVICE+DIV+PROJECT_INDEX_SERVICE+DIV+id.split('|')[1];
+    console.log('GetPRojectFromChildID ID: ', pid);
+    const doc = await this.getDoc(pid);
+    console.log('Project:: ', doc);
+    return doc;
+  }
+
   async getAllByType(type, serverRefreshForce = false, attachments=false) {
     const res = await this._pouch.allDocs({
       include_docs: true,
@@ -225,6 +238,12 @@ export class DataService {
 
   async remove(id, syncRemote = true) {
     try {
+      if (typeof id !== 'string' ) {
+        if(id) {
+          if(id._id)
+            id = id._id;
+        }
+      }
       const doc = await this._pouch.get(id);
       doc._deleted = true;
       doc.updated = Date.now();
@@ -332,12 +351,9 @@ export class DataService {
 
       if(doc._id == null) {
         doc._id = project.childId +'|' +generateShortCollectionId(collection);
-        doc.id = doc._id; // for vis components, they only use id not _id
         res = await this._pouch.put(doc);
       }
       else {
-        //make sure we have an id
-        if(!doc.id) doc.id = doc._id;
         res = await this._pouch.put({...oldDoc, ...doc});
       }
 
@@ -375,16 +391,22 @@ export class DataService {
   }
 
   async save(doc, collection:string='', oldDoc = null, attachment = null, syncRemote=true): Promise<any> {
-
     // if its a design doc, or query, skip it
     if(doc._id != null && doc._id.startsWith('_') ) {
       return false;
     }
 
-    if(oldDoc != null) {
-      if(isEqual(oldDoc, doc)) {
+    if(doc._id && oldDoc == null) {
+      oldDoc = await this._pouch.get(doc._id);
+    }
+
+    if(!oldDoc) oldDoc = {};
+
+
+    console.log('Checking if no changes made: ', oldDoc);
+    if(isEqual(oldDoc, doc)) {
+        console.log('No changes, skip saving');
         return false; // we have no need to save, maybe here we need something else, like a message
-      }
     }
 
     let res;
@@ -393,21 +415,9 @@ export class DataService {
 
       if(doc._id == null) {
         doc._id = generateCollectionId(collection);
-        doc.id = doc._id; // for vis components, they only use id not _id
-        console.log(doc);
-        res = await this._pouch.put(doc);
       }
-      else {
-        // try getting the doc and merge it
-        const old = await this._pouch.get(doc._id);
-        console.log('Got old doc: ', old);
 
-        //make sure we have an id
-        if(!doc.id)
-          doc.id = doc._id;
-
-        res = await this._pouch.put({...old, ...doc});
-      }
+      res = await this._pouch.put({...oldDoc, ...doc});
 
       //see if we have an attachment
       if(attachment) {
@@ -539,11 +549,12 @@ export class DataService {
     this.createSettingsDoc();
 
     this._pouch.createIndex({
-      index: {fields: ['side1', 'nextStudySession']}
+      index: {fields: ['side1']}
+    });
+    this._pouch.createIndex({
+      index: {fields: ['nextStudySession']}
     });
   }
-
-
 
   async createSettingsDoc() {
     await waitMS(1000);

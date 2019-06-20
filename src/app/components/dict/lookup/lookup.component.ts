@@ -1,20 +1,23 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, Input } from '@angular/core';
 import { DictService } from '../../../services/dict.service';
-import { NavController, ModalController } from '../../../../../node_modules/@ionic/angular';
-import { ActivatedRoute } from '../../../../../node_modules/@angular/router';
+import { NavController, ModalController, IonInput } from '@ionic/angular';
+import { ActivatedRoute } from '@angular/router';
 import { EditCardComponent } from '../../cards/edit-card/edit-card.component';
-import { CardItem, ACTION_SAVE, CARD_COLLECTION, ACTION_REMOVE } from '../../../models';
+import { CardItem } from '../../../models';
 import { DataService } from '../../../services/data.service';
 
 @Component({
   selector: 'dic-lookup',
   templateUrl: './lookup.component.html',
   styleUrls: ['./lookup.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LookupComponent implements OnInit, OnDestroy {
 
+  @ViewChild('searchInput') searchInput: IonInput;
+
   searchText = '';
-  searchMode =  'En -> Ch';
+  searchMode =  'En';
   searchTarget = 'zh-CN';
   searchSource = 'en';
   words = [];
@@ -64,8 +67,8 @@ export class LookupComponent implements OnInit, OnDestroy {
     console.log(w);
     //this.navCtr.navigateForward('/dict/word/' + w.def + '/' + w.source + '/' + w.pinyin);
     const card = new CardItem({
-      side1: w.def,
-      side2: w.source,
+      side1: w.source,
+      side2: w.def,
       side3: w.pinyin
     });
     const modal = await this.modalCtr.create({
@@ -73,17 +76,6 @@ export class LookupComponent implements OnInit, OnDestroy {
       componentProps: { item: card, showHeader: true}
     });
     modal.present();
-    const res = await modal.onDidDismiss();
-    const data = res.data || null;
-    if(data) {
-      if(data['action'] === ACTION_SAVE) {
-        console.log('Saving:: ', data.item,);
-        this.dataService.saveCard( data.item);
-      }
-      else if(data['action'] === ACTION_REMOVE && data['item']) {
-        this.dataService.remove(data.item);
-      }
-    }
   }
 
 
@@ -103,9 +95,13 @@ export class LookupComponent implements OnInit, OnDestroy {
 
   async textChange(e = {}) {
     console.log(this.searchText);
+    if(this.searchText.trim() === '') return;
     this.words = [];
     const words = await this.dictService.search(this.searchText.trim(),
       this.searchTarget, this.searchSource);
+
+    if(!words)
+      return;
 
     this.words = this.words.concat(words);
 
@@ -113,17 +109,18 @@ export class LookupComponent implements OnInit, OnDestroy {
   }
 
   changeSearchMode() {
-    if(this.searchMode === 'En -> Ch') {
-      this.searchMode = 'Ch -> En';
+    if(this.searchMode === 'En') {
+      this.searchMode = '文';
       this.searchTarget = 'en';
       this.searchSource = 'zh-CN';
     }
     else {
-      this.searchMode = 'En -> Ch';
+      this.searchMode = 'En';
       this.searchTarget = 'zh-CN';
       this.searchSource = 'en';
 
     }
+    this.textChange();
   }
 
   ngOnDestroy() {
@@ -131,6 +128,12 @@ export class LookupComponent implements OnInit, OnDestroy {
       this._searchSub.unsubscribe();
     if(this._syncSub && !this._syncSub.closed)
       this._syncSub.unsubscribe();
+  }
+
+  clearInput() {
+    this.searchText = '';
+    this.searchInput.setFocus();
+
   }
 
 }

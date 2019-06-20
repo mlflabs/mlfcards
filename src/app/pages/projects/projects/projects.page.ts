@@ -44,6 +44,12 @@ export class ProjectsPage implements OnInit, OnDestroy {
 
   async refresh() {
     this.items = await this.dataService.getAllByProjectAndType(PROJECT_SERVICE, PROJECT_INDEX_SERVICE);
+    this.items.sort( (a, b) => {
+      if(a.name === 'Default') return -1;
+      if(b.name === 'Default') return 1;
+      if(a.name < b.name) return -1;
+      return 1;
+    });
     this.cdr.detectChanges();
   }
 

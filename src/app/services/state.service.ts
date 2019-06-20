@@ -205,54 +205,7 @@ export class StateService {
     const endDate = Date.now();
 
     cards.forEach( async c => {
-      if(!c.sessions) c.sessions = {};
-      if(!c.proficiencyLevel) c.proficiencyLevel = 0;
-
-      c.sessions[endDate] = {
-        gameSidePoints: c.currentSidePoints,
-        wrongAnswers: c.currentWrongAnswers,
-        correctAnswers: c.currentCorrectAnswers,
-        notKnow: c.currentNotKnow
-      };
-
-      // calculate stats, and see which profficiency level we end up with
-      //see if we got any wrong answers
-      if(c.currentWrongAnswers === 0) {
-        //did we get all game pooints required
-        let points = 0;
-        valuesIn(c.currentSidePoints).forEach(v => {
-          points += Number(v);
-        });
-        if(points >= environment.gamePoinsRequired) {
-          // lets move up a level, if level is 0, card is finished,
-          // no more studying
-          c.proficiencyLevel++;
-          if(environment.proficiencyLevels.length === c.proficiencyLevel) {
-            //this means we are at the highest level, mark card finsihed
-            c.studyFinished = true;
-          }
-        }
-      }
-      else {
-        // how many wrong answers did we get
-        if(c.currentCorrectAnswers > environment.proficiencyLevelWrongAnswerCountDecrese) {
-          if(c.proficiencyLevel > 0) c.proficiencyLevel--;//dont go under 0
-        }
-      }
-
-      //calculate next study session date
-      c.lastStudySession = endDate;
-      c.nextStudySession = addDays(new Date(endDate),
-        environment.proficiencyLevels[c.proficiencyLevel]).getTime();
-
-      //remove old game stats
-      delete c.currentSidePoints;
-      delete c.currentWrongAnswers;
-      delete c.currentCorrectAnswers;
-      delete c.currentNotKnow;
-
       await this.dataService.save(c);
-
     });
   }
 
