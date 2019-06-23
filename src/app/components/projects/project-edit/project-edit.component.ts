@@ -65,4 +65,8 @@ export class ProjectEditComponent implements OnInit {
     }
   }
 
+  process() {
+    console.log('Process');
+  }
+
 }

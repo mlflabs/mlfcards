@@ -39,13 +39,16 @@ export class ProjectItem extends Doc {
   public meta_access?;
   public childId?;
   public priority?: number; // how frequetly to study these cards
+
+
+  public generateNote; //???
 }
 
 export class CardItem extends Doc {
   public side1?: string;
   public side2?: string;
   public side3?: string;
-  public node?: string;
+  public note?: string;
 
   //public progress?: number;
   public lastStudySession?: number;

@@ -310,7 +310,7 @@ export class DataService {
   }
 
   async saveInProject(doc,
-                      project: ProjectItem = {},
+                      project: ProjectItem = new ProjectItem(),
                       collection:string='',
                       oldDoc = null,
                       attachment = null,

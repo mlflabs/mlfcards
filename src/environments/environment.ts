@@ -8,10 +8,11 @@ export const environment = {
   pouch_prefix: 'cards_',
   token_expiery: 300, // how many days
   auth_api: 'https://auth.mlflabs.com',
-  couch_db: 'http://localhost:3001/api_cards',
+  couch_db: 'https://cards.mlflabs.com/api_cards',
+  // couch_db: 'http://localhost:3001/api_cards',
   dict_db: 'https://dict.mlflabs.com/mlf_dict',
-  dictApiUrl: 'https://dictapi.mlflabs.com',
-  //dictApiUrl: 'http://localhost:3050',
+  //dictApiUrl: 'https://dictapi.mlflabs.com',
+  dictApiUrl: 'http://localhost:3050',
   access_meta_key: 'meta_access',
   server_sync_debounce_time: 10000,
 

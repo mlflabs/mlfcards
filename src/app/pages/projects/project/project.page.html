@@ -16,15 +16,15 @@
 
   <ion-button (click)="edit()" expand="block">Add Card</ion-button>
   <ion-list>
-    <ion-item-sliding>
-        <ion-item *ngFor="let card of cards" (click)="edit(card)" detail lines="full">
+    <ion-item-sliding  *ngFor="let card of cards">
+        <ion-item (click)="edit(card)" detail lines="full">
             <ion-label>{{card.side1}}</ion-label>
             <ion-label>{{card.side2}}</ion-label>
             <ion-label>{{card.side3}}</ion-label>
             <ion-note>{{card.note}}</ion-note>
         </ion-item>
         <ion-item-options side="end">
-            <ion-item-option (click)="edit(item)"> Edit </ion-item-option>
+            <ion-item-option (click)="edit(card)"> Edit </ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
 </ion-list>

@@ -4,7 +4,7 @@ export const environment = {
   pouch_prefix: 'cards_',
   token_expiery: 300, // how many days
   auth_api: 'https://auth.mlflabs.com',
-  couch_db: 'https://api.mlflabs.com/mlfapi',
+  couch_db: 'https://cards.mlflabs.com/api_cards',
   dict_db: 'https://dict.mlflabs.com',
   dictApiUrl: 'https://dictapi.mlflabs.com',
   access_meta_key: 'meta_access',

@@ -1,13 +1,19 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthGuardService } from './auth/auth-guard.service';
+import { HomePage } from './pages/home/home.page';
+import { ProjectsPage } from './pages/projects/projects/projects.page';
+import { TestPage } from './pages/test/test.page';
+import { SettingsPage } from './pages/settings/settings.page';
+import { TabsPage } from './tabs/tabs.page';
 
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: '/home',
     pathMatch: 'full'
   },
+  /*
   {
     path: 'projects',
     redirectTo: 'projects/list',
@@ -17,7 +23,7 @@ const routes: Routes = [
   { path: 'register', loadChildren: './auth/pages/register/register.module#RegisterPageModule' },
   { path: 'forgotPassword', loadChildren: './auth/pages/forgot-password/forgot-password.module#ForgotPasswordPageModule' },
 
-  { path: 'settings', loadChildren: './pages/settings/settings.module#SettingsPageModule' },
+  { path: 'settings', component: SettingsPage },
 
   { path: 'user',
   canActivate: [ AuthGuardService ],
@@ -25,7 +31,7 @@ const routes: Routes = [
 
   { path: 'projects',
     children: [
-      { path: 'list', loadChildren: './pages/projects/projects/projects.module#ProjectsPageModule' },
+      { path: 'list', component: ProjectsPage },
       { path: 'p/:id',
         children: [
           { path: '',  loadChildren: './pages/projects/project/project.module#ProjectPageModule' },
@@ -36,7 +42,7 @@ const routes: Routes = [
   {
     path: 'study',
     children: [
-      { path: 'default', loadChildren: './pages/test/test.module#TestPageModule' },
+      { path: 'default',   component: TestPage },
     ]
   },
   {
@@ -52,9 +58,27 @@ const routes: Routes = [
 
 
   { path: 'word-detail', loadChildren: './pages/dict/word-detail/word-detail.module#WordDetailPageModule' },
-  { path: 'home', loadChildren: './pages/home/home.module#HomePageModule' },
+  { path: 'home', component: HomePage },
   { path: 'edit', loadChildren: './pages/cards/edit/edit.module#EditPageModule' },
   { path: 'test', loadChildren: './pages/test/test.module#TestPageModule' },
+
+  */
+  { path: '',
+    component: TabsPage,
+    children: [
+      { path: 'home', loadChildren: './pages/home/home.module#HomePageModule'},
+      { path: 'projects',
+          children: [
+            { path: 'list', component: ProjectsPage },
+            { path: 'p/:id',
+              children: [
+                { path: '',  loadChildren: './pages/projects/project/project.module#ProjectPageModule' },
+                //{ path: 'play', loadChildren: './pages/play/play-default/play-default.module#PlayDefaultPageModule' },
+              ]},
+          ]
+      },
+    ],
+  }
 
  // { path: 'dict', loadChildren: './pages/dict/dict/dict.module#DictPageModule' },
 ];

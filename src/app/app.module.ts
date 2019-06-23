@@ -18,15 +18,26 @@ import { CardsModule } from './components/cards/cards.module';
 import { ProjectPageModule } from './pages/projects/project/project.module';
 import { EditCardComponent } from './components/cards/edit-card/edit-card.component';
 import { FormsModule } from '../../node_modules/@angular/forms';
+import { HomePage } from './pages/home/home.page';
+import { SettingsPage } from './pages/settings/settings.page';
+import { ProjectsPage } from './pages/projects/projects/projects.page';
+import { TestPage } from './pages/test/test.page';
+import { TabsPageModule } from './tabs/tabs.module';
+import { TabsPage } from './tabs/tabs.page';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     EditCardComponent,
+    TabsPage,
+
   ],
   entryComponents: [
     EditCardComponent,
+    TabsPage,
+
+
   ],
   imports: [
     BrowserModule,
@@ -35,7 +46,7 @@ import { FormsModule } from '../../node_modules/@angular/forms';
     FormsModule,
     IonicStorageModule.forRoot(),
     IonicModule.forRoot(),
-    AppRoutingModule
+    AppRoutingModule,
   ],
   providers: [
     StatusBar,

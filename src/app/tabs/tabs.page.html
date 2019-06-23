@@ -1,0 +1,17 @@
+<ion-tabs>
+  <!--
+    <ion-tab
+      *ngFor="let tab of tabPages" 
+      component="{{tab.url}}"
+      tab="{{tab.title}}"></ion-tab>
+  -->
+    <ion-tab-bar slot="bottom">
+      <ion-tab-button *ngFor="let tab of tabPages"  tab="{{tab.url}}">
+        <ion-icon name="{{tab.icon}}"></ion-icon>
+        <ion-label>{{tab.title}}</ion-label>
+        
+        <!-- <ion-badge>5</ion-badge> -->
+      </ion-tab-button>
+    </ion-tab-bar>
+  </ion-tabs>
+  

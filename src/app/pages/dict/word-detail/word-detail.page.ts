@@ -16,7 +16,7 @@ export class WordDetailPage implements OnInit, OnDestroy {
 
   private navSub;
   private dictSub;
-  public word =  new CardItem();
+  public word;
 
   constructor(public route: ActivatedRoute,
               public navCtr: NavController,
